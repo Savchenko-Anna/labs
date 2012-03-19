@@ -1,0 +1,72 @@
+#!/bin/bash 
+
+case $1 in
+	"init" )
+	if [ -f .$2/vers ] ; then
+		echo "The directory .$2 already exists"
+		exit 1
+	fi
+	mkdir .$2/
+	echo 0 > .$2/vers
+	cp ./$2 .$2/last_file
+	;;
+
+	"commit" )
+	if [ ! -f .$2/vers ] ; then
+		echo "You need to make \"init\" first"
+		exit 1
+	fi
+
+	diff -u $2 .$2/last_file > /dev/null
+
+	if [ $? = 1 ] ; then
+		{ read vers ;} < .$2/vers
+		vers=$((vers + 1));	
+		echo $vers > .$2/vers
+		diff -u $2 .$2/last_file > .$2/diff_$vers
+		cp ./$2 ./.$2/last_file
+	fi
+	;;
+
+	"diff" )
+	if [ ! -f .$2/vers ] ; then
+		echo "You need to make \"init\" first"
+		exit 1
+	fi
+	diff -u $2 .$2/last_file
+	;;
+
+	"status" )
+	if [ ! -f .$2/vers ] ; then
+		echo "You need to make \"init\" first"
+		exit 1
+	fi
+
+	diff -u $2 .$2/last_file > /dev/null
+
+	if [ $? = 0 ]; then			
+		echo "The file was not updated" 
+		exit 0
+	else
+		echo "The file was updated"
+		exit 1
+	fi
+	;;
+
+	"update" )
+	if [ ! -f .$2/vers ] ; then
+		echo "You need to make \"init\" first"
+		exit 1
+	fi
+	cp .$2/last_file .$2/temp_file
+	cp .$2/vers .$2/temp_vers
+	{ read temp_vers ;} < .$2/temp_vers
+	
+	while [ $temp_vers != $3 ]
+	do	
+		patch .$2/temp_file .$2/diff_$temp_vers > /dev/null
+		temp_vers=$((temp_vers - 1));	
+		echo $temp_vers > .$2/temp_vers
+	done
+	cp .$2/temp_file $2
+esac
