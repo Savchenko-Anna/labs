@@ -1,0 +1,90 @@
+sed -n '{
+1 {
+s/.*/<html>\
+<head>\
+    <meta http-equiv="Content-Type" content="text\/html; charset=UTF-8" \/>\
+    <title>&<\/title>\
+<\/head>\
+<body>/
+p
+}
+2,$ {
+
+s/^[ ]*//
+s/[ ]*$//
+s/[ ][ ]*/ /g
+
+/.*%.*/ {
+s/.*//
+}
+
+/^$/ {
+x
+s/.*/<p>&<\/p>/
+s/<p>\n/<p>/
+/<p><\/p>/ ! {
+p
+}
+s/.*//
+x
+b end
+}
+
+/^\\section{.*}$/ {
+x
+s/.*/<p>&<\/p>/
+s/<p>\n/<p>/
+/<p><\/p>/ ! {
+p
+}
+s/.*//
+x
+s/\\section//
+s/[{}]*//g
+s/.*/<h1>&<\/h1>/
+p
+b end
+}
+
+/^\\subsection{.*}$/ {
+x
+s/.*/<p>&<\/p>/
+s/<p>\n/<p>/
+/<p><\/p>/ ! {
+p
+}
+s/.*//
+x
+s/\\subsection//
+s/[{}]//g
+s/.*/<h2>&<\/h2>/
+p
+b end
+}
+
+/.*/ {
+H
+}
+
+:end
+}
+
+$ {
+s/^[ ]*//
+s/[ ]*$//
+s/[ ][ ]*/ /g
+
+x
+s/.*/<p>&<\/p>/
+s/<p>\n/<p>/
+/<p><\/p>/ ! {
+p
+}
+s/.*//
+x
+s/.*/<\/body>\
+<\/html>/
+p
+}
+
+}'
